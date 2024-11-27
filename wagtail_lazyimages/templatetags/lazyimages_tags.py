@@ -54,7 +54,7 @@ class LazyImageNode(ImageNode):
         if not image:
             return ""
 
-        rendition = get_rendition_or_not_found(image, self.filter)
+        rendition = get_rendition_or_not_found(image, self.get_filter())
         rendition.lazy_url = _get_placeholder_url(rendition)
 
         lazy_attr = str(self.attrs.pop("lazy_attr", '"data-src"'))[1:-1]
@@ -74,10 +74,12 @@ class LazyImageNode(ImageNode):
 
 @register.tag(name="lazy_image")
 def lazy_image(parser, token):
+    # FIXME Remove this when Wagtail image method is changed to fallback to ImageNode if tag_name is not found
+    token.contents = token.contents.replace("lazy_image", "image")
     node = image(parser, token)
     return LazyImageNode(
         node.image_expr,
-        node.filter_spec,
+        node.filter_specs,
         attrs=node.attrs,
         output_var_name=node.output_var_name,
     )
